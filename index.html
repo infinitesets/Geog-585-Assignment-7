@@ -92,7 +92,8 @@
           // function to build the HTML for the summary label using the selected feature's "BuildingName" property
           function buildSummaryLabel(currentFeature){
             var featureName = currentFeature.properties.BuildingName || "Unnamed feature";
-            document.getElementById('summaryLabel').innerHTML = '<p style="font-size:18px"><b>' + featureName + '</b></p>';
+            var featureAddress = currentFeature.properties.BuildingAddress || "No address";
+            document.getElementById('summaryLabel').innerHTML = '<p style="font-size:18px"><b>' + featureName + '</b><br>' + featureAddress + '</p>';
           }
           
         }
