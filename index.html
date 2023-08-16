@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <title>Michigan Schools</title>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" type="text/css" crossorigin="">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" crossorigin=""></script>
+      <script src="schools.js"></script>
+      <link rel="stylesheet" href="style.css" type="text/css">
+       
+        <script type="text/javascript">
+          var map;
+
+          function init() {
+          // create map and set center and zoom level
+          map = new L.map('mapid');
+          map.setView([44.34, -85.58], 6);
+
+            // create and add the tile layer
+          var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+});
+          tiles.addTo(map);
+
+          var schoolLayer;
+
+          var selection;
+          var selectedLayer;
+       
+
+
+          // create icons for schoolss (selected and unselected)
+          var schoolIcon = L.icon({
+            iconUrl: 'schoolIcon.png',
+            iconSize: [24,24]
+          });
+
+          var selectedSchoolIcon = L.icon({
+            iconUrl: 'schoolIconSelected.png',
+            iconSize: [24,24]
+          });
+
+          // handle click events on school features
+          function schoolOnEachFeature(feature, layer){
+            layer.on({
+              click: function(e) {
+                  if (selection) {
+                    resetStyles();
+                  }
+                  e.target.setIcon(selectedSchoolIcon);
+                  selection = e.target;
+                  selectedLayer = schoolLayer;
+                  
+                  // Insert some HTML with the feature name
+                  buildSummaryLabel(feature);
+
+                  L.DomEvent.stopPropagation(e); // stop click event from being propagated further
+                }
+            });
+          }
+
+          
+          
+          // add the pantries GeoJSON layer using the pantriesData variable from schools.js
+                schoolLayer = new L.geoJSON(schoolData,{
+                     pointToLayer: function (feature, latlng) {
+                      return L.marker(latlng, {icon: schoolIcon});
+                     },
+                     onEachFeature: schoolOnEachFeature
+                   }
+                );    
+               
+               schoolLayer.addTo(map);
+
+
+          // handle clicks on the map that didn't hit a feature
+          map.addEventListener('click', function(e) {
+            if (selection) {
+              resetStyles();
+              selection = null;
+              document.getElementById('summaryLabel').innerHTML = '<p>Click a school on the map to get more information.</p>';
+            }
+          });
+          
+          // function to set the old selected feature back to its original symbol. Used when the map or a feature is clicked.
+          function resetStyles(){
+            if (selectedLayer === schoolLayer) selection.setIcon(schoolIcon);
+
+          }
+          
+          // function to build the HTML for the summary label using the selected feature's "BuildingName" property
+          function buildSummaryLabel(currentFeature){
+            var featureName = currentFeature.properties.BuildingName || "Unnamed feature";
+            document.getElementById('summaryLabel').innerHTML = '<p style="font-size:18px"><b>' + featureName + '</b></p>';
+          }
+          
+        }
+            
+        </script>
+      </head>
+      <body onload="init()">
+        <h1 id="title">Michigan Schools</h1>
+
+        <div id="mapid"></div>
+        <div id="summaryLabel">
+            <p>Click a school on the map to get more information.</p>
+        </div>
+      </body>
+    </html>
